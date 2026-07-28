@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription LumyMail</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; background: #f4f4f9; }
+        .form-card { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .field { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #0066ff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        #status { margin-top: 15px; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="form-card">
+    <h2>Créer un compte LumyMail</h2>
+    
+    <div class="field">
+        <label>Nom complet :</label>
+        <input type="text" id="fullname" placeholder="Jean Dupont">
+    </div>
+
+    <div class="field">
+        <label>Adresse voulue :</label>
+        <div style="display:flex; align-items:center;">
+            <input type="text" id="username" placeholder="jean.dupont">
+            <span style="margin-left: 5px;">@lumymail.com</span>
+        </div>
+    </div>
+
+    <div class="field">
+        <label>Mot de passe :</label>
+        <input type="password" id="password">
+    </div>
+
+    <button onclick="creerCompte()">Créer mon compte</button>
+
+    <div id="status"></div>
+</div>
+
+<script>
+async function creerCompte() {
+    const statusDiv = document.getElementById('status');
+    const name = document.getElementById('fullname').value;
+    const username = document.getElementById('username').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+
+    if (!name || !username || !password) {
+        statusDiv.style.color = "red";
+        statusDiv.innerText = "Veuillez remplir tous les champs.";
+        return;
+    }
+
+    statusDiv.style.color = "black";
+    statusDiv.innerText = "Création du compte en cours...";
+
+    try {
+        // Envoi au Backend local
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, username, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            statusDiv.style.color = "green";
+            statusDiv.innerText = "Compte créé ! Redirection vers la messagerie...";
+            setTimeout(() => {
+                window.location.href = "https://mail.lumycorp.com/SOGo/";
+            }, 1500);
+        } else {
+            statusDiv.style.color = "red";
+            statusDiv.innerText = "Erreur : " + result.error;
+        }
+    } catch (err) {
+        statusDiv.style.color = "red";
+        statusDiv.innerText = "Erreur lors de la communication avec le serveur.";
+    }
+}
+</script>
+
+</body>
+</html>
