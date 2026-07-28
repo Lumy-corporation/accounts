@@ -2,104 +2,129 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Inscription LumyMail</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un compte LumyMail</title>
     <style>
-        body { font-family: sans-serif; padding: 40px; background: #f4f4f9; }
-        .form-card { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .field { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #0066ff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        #status { margin-top: 15px; font-weight: bold; text-align: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #0f172a; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .card { background: #ffffff; width: 100%; max-width: 420px; padding: 32px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1 { font-size: 24px; color: #2563eb; text-align: center; margin-bottom: 8px; }
+        p.subtitle { color: #64748b; font-size: 14px; text-align: center; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+        input:focus { border-color: #2563eb; }
+        .email-input { display: flex; }
+        .email-input input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+        .email-domain { background: #f1f5f9; border: 1px solid #cbd5e1; border-left: none; padding: 10px 12px; font-size: 14px; color: #64748b; font-weight: 600; border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+        button { width: 100%; background: #2563eb; color: white; border: none; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 6px; cursor: pointer; margin-top: 8px; }
+        button:hover { background: #1d4ed8; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #status { margin-top: 16px; font-size: 14px; font-weight: 600; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="form-card">
-    <h2>Créer un compte LumyMail</h2>
-    
-    <div class="field">
-        <label>Nom complet :</label>
-        <input type="text" id="fullname" placeholder="Jean Dupont">
-    </div>
+<div class="card">
+    <h1>LumyMail</h1>
+    <p class="subtitle">Créer votre adresse e-mail personnelle</p>
 
-    <div class="field">
-        <label>Adresse voulue :</label>
-        <div style="display:flex; align-items:center;">
-            <input type="text" id="username" placeholder="jean.dupont">
-            <span style="margin-left: 5px;">@lumymail.com</span>
+    <form id="signupForm">
+        <div class="form-group">
+            <label for="fullname">Nom complet</label>
+            <input type="text" id="fullname" placeholder="Jean Dupont" required>
         </div>
-    </div>
 
-    <div class="field">
-        <label>Mot de passe :</label>
-        <input type="password" id="password">
-    </div>
+        <div class="form-group">
+            <label for="username">Adresse e-mail souhaitée</label>
+            <div class="email-input">
+                <input type="text" id="username" placeholder="jean.dupont" required>
+                <span class="email-domain">@lumymail.com</span>
+            </div>
+        </div>
 
-    <button onclick="creerCompte()">Créer mon compte</button>
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" required placeholder="••••••••••••">
+        </div>
+
+        <button type="submit" id="submitBtn">Créer mon compte</button>
+    </form>
 
     <div id="status"></div>
 </div>
 
 <script>
-async function creerCompte() {
+    // Config de ton serveur Mailcow
+    const MAILCOW_API_URL = 'https://mail.lumycorp.com/api/v1/add/mailbox';
+    const MAILCOW_API_KEY = 'METS_TA_CLE_API_SECRETE_ICI'; 
+
+    const form = document.getElementById('signupForm');
     const statusDiv = document.getElementById('status');
-    const name = document.getElementById('fullname').value;
-    const username = document.getElementById('username').value.trim().toLowerCase();
-    const password = document.getElementById('password').value;
+    const submitBtn = document.getElementById('submitBtn');
 
-    if (!name || !username || !password) {
-        statusDiv.style.color = "red";
-        statusDiv.innerText = "Veuillez remplir tous les champs.";
-        return;
-    }
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    statusDiv.style.color = "black";
-    statusDiv.innerText = "Création en cours...";
+        const fullname = document.getElementById('fullname').value.trim();
+        const username = document.getElementById('username').value.trim().toLowerCase();
+        const password = document.getElementById('password').value;
 
-    try {
-        // Envoi avec le JSON exact qui fonctionne sur ton serveur Mailcow
-        const response = await fetch('https://mail.lumycorp.com/api/v1/add/mailbox', {
-            method: 'POST',
-            headers: {
-                'X-API-Key': 'TA_CLE_API_MAILCOW', // Replace par ta vraie clé API
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                active: "1",
-                domain: "lumymail.com",
-                local_part: username,
-                name: name,
-                authsource: "mailcow",
-                password: password,
-                password2: password,
-                quota: "1024",
-                force_pw_update: "0",
-                force_tfa: "0",
-                tls_enforce_in: "0",
-                tls_enforce_out: "0",
-                tags: ["b2c", "lumymail"]
-            })
-        });
+        statusDiv.style.color = '#0f172a';
+        statusDiv.innerText = 'Création du compte en cours...';
+        submitBtn.disabled = true;
 
-        const result = await response.json();
+        // Structure exacte demandée par ton Mailcow
+        const payload = {
+            active: "1",
+            domain: "lumymail.com",
+            local_part: username,
+            name: fullname,
+            authsource: "mailcow",
+            password: password,
+            password2: password,
+            quota: "1024",
+            force_pw_update: "0",
+            force_tfa: "0",
+            tls_enforce_in: "0",
+            tls_enforce_out: "0",
+            tags: [
+                "b2c",
+                "lumymail"
+            ]
+        };
 
-        if (response.ok && Array.isArray(result) && result[0] && result[0].type === "success") {
-            statusDiv.style.color = "green";
-            statusDiv.innerText = "Compte créé avec succès !";
-            setTimeout(() => {
-                window.location.href = "https://mail.lumycorp.com/SOGo/";
-            }, 2000);
-        } else {
-            statusDiv.style.color = "red";
-            const errorMsg = (Array.isArray(result) && result[0]?.msg) ? result[0].msg : "Erreur lors de la création.";
-            statusDiv.innerText = "Erreur : " + errorMsg;
+        try {
+            const response = await fetch(MAILCOW_API_URL, {
+                method: 'POST',
+                headers: {
+                    'X-API-Key': MAILCOW_API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && Array.isArray(result) && result[0] && result[0].type === "success") {
+                statusDiv.style.color = '#10b981';
+                statusDiv.innerText = 'Compte créé avec succès ! Redirection...';
+                
+                setTimeout(() => {
+                    window.location.href = 'https://mail.lumycorp.com/SOGo/';
+                }, 2000);
+            } else {
+                statusDiv.style.color = '#ef4444';
+                const errorMsg = (Array.isArray(result) && result[0]?.msg) ? result[0].msg : "Erreur de création.";
+                statusDiv.innerText = 'Erreur : ' + errorMsg;
+                submitBtn.disabled = false;
+            }
+        } catch (err) {
+            statusDiv.style.color = '#ef4444';
+            statusDiv.innerText = 'Impossible de contacter le serveur Mailcow.';
+            submitBtn.disabled = false;
         }
-    } catch (err) {
-        statusDiv.style.color = "red";
-        statusDiv.innerText = "Impossible de contacter l'API (Pense à vérifier le CORS si besoin).";
-    }
-}
+    });
 </script>
 
 </body>
