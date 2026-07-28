@@ -95,10 +95,10 @@
         };
 
         try {
-            const response = await fetch(MAILCOW_API_URL, {
+const response = await fetch('https://mail.lumycorp.com/api/v1/add/mailbox', {
                 method: 'POST',
                 headers: {
-                    'X-API-Key': MAILCOW_API_KEY,
+                    'X-API-Key': MaSuperCleAPI123456789,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
